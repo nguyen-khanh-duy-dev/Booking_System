@@ -1,14 +1,15 @@
 const express = require("express");
 const cors = require("cors");
 const courtRoutes = require("./routes/court.route.js");
+const pricingRoutes = require("./routes/pricing.route.js");
 const logger = require("./middlewares/logger.middleware");
 const notFound = require("./middlewares/notfound.middleware.js");
 const errorMiddleware = require("./middlewares/error.middleware.js");
 
 const app = express();
 
-const allowedOrigins = process.env.CORS_ORIGINS
-  ? process.env.CORS_ORIGINS.split("").map((origin) => origin.trim())
+const allowedOrigins = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(",").map((origin) => origin.trim())
   : [];
 
 // Middleware cho toàn bộ
@@ -35,14 +36,15 @@ app.use(express.json());
 app.use(logger);
 
 app.use("/api/courts", courtRoutes);
-
-app.use(notFound);
+app.use("/api/pricing", pricingRoutes);
 
 app.get("/", (req, res) => {
   res.json({
     message: "Booking System API",
   });
 });
+
+app.use(notFound);
 
 app.use(errorMiddleware);
 

@@ -394,8 +394,13 @@ courts
   updated_at
 
 pricing_rules
-  id, court_id, day_type (WEEKDAY | WEEKEND),
-  start_time, end_time, price_per_hour, effective_from
+  id, 
+  court_id, 
+  day_type (WEEKDAY | WEEKEND),
+  start_time, 
+  end_time, 
+  price_per_hour, 
+  effective_from
 
 bookings
   id, booking_code, user_id, court_id,

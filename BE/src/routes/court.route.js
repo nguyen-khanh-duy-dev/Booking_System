@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const courtController = require("../controllers/court.controller");
+const pricingRoutes = require("./pricing.route");
 
 // [GET] /api/courts
 router.get("/", courtController.getAll);
@@ -13,5 +14,8 @@ router.delete("/:id", courtController.deleteCourt);
 router.patch("/:id", courtController.updateCourt);
 // [POST] /api/courts
 router.post("/", courtController.createCourt);
+
+// routes/court.route.js
+router.use("/:id/pricing", pricingRoutes);
 
 module.exports = router;

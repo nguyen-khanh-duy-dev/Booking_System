@@ -1,39 +1,59 @@
 const db = require("../config/database");
 
-const getAll = async () => {
-  const [rows] = await db.query(
-    "select * from courts where deleted_at is null",
+const findAll = async ({ limit, offset }, { court_type } = {}) => {
+  const where = ["deleted_at IS NULL"];
+  const params = [];
+
+  if (court_type) {
+    where.push("court_type = ?");
+    params.push(court_type);
+  }
+
+  const whereSql = `WHERE ${where.join(" AND ")}`;
+
+  const [[{ total }]] = await db.query(
+    `SELECT COUNT(*) AS total FROM courts ${whereSql}`,
+    params,
   );
 
-  return rows;
+  const [items] = await db.query(
+    `SELECT id, name, court_type, open_time, close_time, slot_minutes, created_at
+       FROM courts
+       ${whereSql}
+      ORDER BY id
+      LIMIT ${limit} OFFSET ${offset}`,
+    params,
+  );
+
+  return { items, total };
 };
 
-const getOne = async (courtId) => {
+const findById = async (id) => {
   const [rows] = await db.query(
-    `select * from courts where id = ${courtId} and deleted_at is null`,
+    `select * from courts where id = ? and deleted_at is null`,
+    [id],
   );
 
   const court = rows[0];
   if (!court) {
-    throw new Error(`Court ${courtId} is not found`);
+    throw new Error(`Court ${id} is not found`);
   }
 
   return court;
 };
 
-const deleteOne = async (courtId) => {
+const softDelete = async (id) => {
   const [result] = await db.query(
     "UPDATE courts SET deleted_at = CURRENT_TIMESTAMP WHERE id = ? AND deleted_at is null",
-    [courtId],
+    [id],
   );
 
   return result;
 };
 
-const updateOne = async (courtId, data) => {
+const update = async (courtId, data) => {
   const fields = [];
   const values = [];
-  console.log(courtId);
 
   if (data.name !== undefined) {
     fields.push("name = ?");
@@ -66,8 +86,6 @@ const updateOne = async (courtId, data) => {
 
   values.push(courtId);
 
-  console.log(values);
-
   const [result] = await db.query(
     `UPDATE courts
      SET ${fields.join(", ")}
@@ -75,8 +93,6 @@ const updateOne = async (courtId, data) => {
      AND deleted_at IS NULL`,
     values,
   );
-
-  console.log(result);
 
   if (result.affectedRows === 0) {
     return null;
@@ -91,7 +107,7 @@ const updateOne = async (courtId, data) => {
 
   return rows[0];
 };
-const createOne = async (
+const create = async (
   name,
   court_type,
   open_time,
@@ -115,9 +131,9 @@ const createOne = async (
 };
 
 module.exports = {
-  getAll,
-  getOne,
-  deleteOne,
-  updateOne,
-  createOne,
+  findAll,
+  findById,
+  softDelete,
+  update,
+  create,
 };

@@ -6,9 +6,16 @@ const {
 const asyncHandler = require("../utils/asyncHandler");
 
 const getAll = asyncHandler(async (req, res) => {
-  const courts = await courtService.getAllCourts();
+  const { page, limit, is_active, court_type } = req.query;
 
-  successResponse(res, courts);
+  const result = await courtService.getAllCourts({
+    page,
+    limit,
+    is_active,
+    court_type,
+  });
+
+  return successResponse(res, result, "Lấy danh sách court thành công");
 });
 
 const getOne = asyncHandler(async (req, res) => {
